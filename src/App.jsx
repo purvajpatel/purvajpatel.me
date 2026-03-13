@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 
 const GOLD = "#C9A84C";
-const BG = "#060709";
-const SURFACE = "#0c0d10";
-const BORDER = "#1a1a1a";
+const BG = "#000";
+const SURFACE = "#080808";
+const BORDER = "#111";
 
 const NAV = ["about", "experience", "projects", "awards", "contact"];
 
@@ -106,8 +106,40 @@ export default function Portfolio() {
   const [loaded, setLoaded] = useState(false);
   const [hoveredProject, setHoveredProject] = useState(null);
   const [hoveredExp, setHoveredExp] = useState(null);
+  const [asciiBg, setAsciiBg] = useState("");
 
   useEffect(() => { setTimeout(() => setLoaded(true), 100); }, []);
+
+  useEffect(() => {
+    const ASCII_CHARS = [".", ":", "*", "+", "=", "#", "@", "%"];
+    let cols = Math.floor(window.innerWidth / 10);
+    let rows = Math.floor(window.innerHeight / 18);
+
+    const makeLine = () => Array.from({ length: cols }, () => ASCII_CHARS[Math.floor(Math.random() * ASCII_CHARS.length)]).join("");
+    let lines = Array.from({ length: rows }, makeLine);
+    setAsciiBg(lines.join("\n"));
+
+    const tick = () => {
+      lines = lines.slice(1);
+      lines.push(makeLine());
+      setAsciiBg(lines.join("\n"));
+    };
+
+    const interval = setInterval(tick, 160);
+
+    const handleResize = () => {
+      cols = Math.floor(window.innerWidth / 10);
+      rows = Math.floor(window.innerHeight / 18);
+      lines = Array.from({ length: rows }, makeLine);
+      setAsciiBg(lines.join("\n"));
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const scrollTo = (id) => {
     setActive(id);
@@ -145,9 +177,9 @@ export default function Portfolio() {
       lineHeight: 1,
     },
     card: {
-      background: SURFACE, border: `1px solid ${BORDER}`,
-      borderRadius: 8, padding: "18px 20px", marginBottom: 10,
-      transition: "all 0.2s",
+      background: "transparent", border: "none",
+      padding: "12px 0", marginBottom: 14,
+      transition: "none",
     },
     tag: (color) => ({
       fontSize: 8, letterSpacing: 2, padding: "2px 8px",
@@ -158,7 +190,13 @@ export default function Portfolio() {
 
   return (
     <div style={s.page}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet" />
+      <div style={{
+        position: "fixed", inset: 0, zIndex: -2, pointerEvents: "none",
+        fontFamily: "'DM Mono', monospace", fontSize: 12, lineHeight: "14px",
+        color: "rgba(255,255,255,0.06)", whiteSpace: "pre", overflow: "hidden",
+      }}>
+        {asciiBg}
+      </div>
 
       <style>{`
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -183,18 +221,6 @@ export default function Portfolio() {
         .skill-tag:hover { background: #C9A84C22 !important; color: #C9A84C !important; border-color: #C9A84C44 !important; }
       `}</style>
 
-      {/* NAV */}
-      <nav style={s.nav}>
-        <div style={s.navName}>PURVA PATEL</div>
-        <div style={s.navLinks}>
-          {NAV.map(n => (
-            <button key={n} className={`nav-link ${active === n ? "active" : ""}`}
-              onClick={() => scrollTo(n)}>
-              {n.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </nav>
 
       {/* HERO / ABOUT */}
       <section id="about" style={{ ...s.section, paddingTop: 140, minHeight: "vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
